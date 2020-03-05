@@ -1,60 +1,51 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"log"
-	"strings"
 
 	"github.com/gitchander/simhash"
 )
 
 func main() {
-	testFrase()
+	testWords()
+	//testRunesGroup()
+	//testStringsGroup()
+}
+
+var samples = []string{
+	"this is a test phrase",
+	"this is a test phrass",
+	"these are test phrases",
+	"foo bar",
 }
 
 func testWords() {
-
-	samples := []string{
-		"this is a test phrase",
-		"this is a test phrass",
-		"these are test phrases",
-		"foo bar",
-	}
 
 	shs := make([]uint64, len(samples))
 
 	for i, sample := range samples {
 
-		p := strings.Split(sample, " ")
-		x := simhash.Strings(p)
+		ws := simhash.Words(sample)
+		fs := simhash.StringSlice(ws)
 
-		shs[i] = simhash.Simhash(x)
+		shs[i] = simhash.Simhash(fs)
 		//fmt.Println(shs[i])
 	}
 
 	fmt.Println(simhash.Compare(shs[0], shs[1]))
 	fmt.Println(simhash.Compare(shs[0], shs[2]))
 	fmt.Println(simhash.Compare(shs[0], shs[3]))
-	//fmt.Println(Compare(shs[0], shs[4]))
 }
 
-func testFrase() {
-	samples := []string{
-		"this is a test phrase",
-		"this is a test phrass",
-		"these are test phrases",
-		"foo bar",
-		"Аргентина манит негра",
-	}
+func testRunesGroup() {
 
 	shs := make([]uint64, len(samples))
 
 	for i, sample := range samples {
 
-		p := simhash.ByFrase{
+		p := simhash.RunesGroup{
 			Runes: []rune(sample),
-			N:     2,
+			N:     3,
 		}
 
 		shs[i] = simhash.Simhash(p)
@@ -64,17 +55,23 @@ func testFrase() {
 	fmt.Println(simhash.Compare(shs[0], shs[1]))
 	fmt.Println(simhash.Compare(shs[0], shs[2]))
 	fmt.Println(simhash.Compare(shs[0], shs[3]))
-	fmt.Println(simhash.Compare(shs[0], shs[4]))
 }
 
-func checkError(err error) {
-	if err != nil {
-		log.Fatal(err)
+func testStringsGroup() {
+
+	shs := make([]uint64, len(samples))
+
+	for i, sample := range samples {
+
+		p := simhash.StringsGroup{
+			Strings: simhash.Words(sample),
+			N:       3,
+		}
+
+		shs[i] = simhash.Simhash(p)
 	}
-}
 
-func printJSON(v interface{}) {
-	data, err := json.Marshal(v)
-	checkError(err)
-	fmt.Println(string(data))
+	fmt.Println(simhash.Compare(shs[0], shs[1]))
+	fmt.Println(simhash.Compare(shs[0], shs[2]))
+	fmt.Println(simhash.Compare(shs[0], shs[3]))
 }

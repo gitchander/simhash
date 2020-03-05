@@ -1,38 +1,51 @@
 package simhash
 
 import (
-	// "fmt"
-	"hash/fnv"
-	"strings"
 	"unicode/utf8"
 )
 
-type ByteSlice [][]byte
+//-----------------------------------------------------------------------------
+type BytesSlice [][]byte
 
-var _ Interface = ByteSlice{}
+var _ Features = BytesSlice{}
 
-func (p ByteSlice) Len() int           { return len(p) }
-func (p ByteSlice) Bytes(i int) []byte { return p[i] }
-func (p ByteSlice) Weight(i int) int   { return 1 }
+func (p BytesSlice) Len() int           { return len(p) }
+func (p BytesSlice) Bytes(i int) []byte { return p[i] }
+func (p BytesSlice) Weight(i int) int   { return 1 }
 
 //-----------------------------------------------------------------------------
-type Strings []string
+type StringSlice []string
 
-var _ Interface = Strings{}
+var _ Features = StringSlice{}
 
-func (p Strings) Len() int           { return len(p) }
-func (p Strings) Bytes(i int) []byte { return []byte(p[i]) }
-func (p Strings) Weight(i int) int   { return 1 }
+func (p StringSlice) Len() int           { return len(p) }
+func (p StringSlice) Bytes(i int) []byte { return []byte(p[i]) }
+func (p StringSlice) Weight(i int) int   { return 1 }
 
 //-----------------------------------------------------------------------------
-type ByFrase struct {
+type RuneSlice []rune
+
+var _ Features = RuneSlice{}
+
+func (p RuneSlice) Len() int { return len(p) }
+
+func (p RuneSlice) Bytes(i int) []byte {
+	data := make([]byte, utf8.UTFMax)
+	n := utf8.EncodeRune(data, p[i])
+	return data[:n]
+}
+
+func (p RuneSlice) Weight(i int) int { return 1 }
+
+//-----------------------------------------------------------------------------
+type RunesGroup struct {
 	Runes []rune
 	N     int
 }
 
-var _ Interface = ByFrase{}
+var _ Features = RunesGroup{}
 
-func (p ByFrase) Len() int {
+func (p RunesGroup) Len() int {
 	n := (len(p.Runes) - p.N + 1)
 	if n < 0 {
 		n = 0
@@ -40,7 +53,7 @@ func (p ByFrase) Len() int {
 	return n
 }
 
-func (p ByFrase) Bytes(i int) []byte {
+func (p RunesGroup) Bytes(i int) []byte {
 	data := make([]byte, (p.N * utf8.UTFMax))
 	var k int
 	for j := 0; j < p.N; j++ {
@@ -51,90 +64,34 @@ func (p ByFrase) Bytes(i int) []byte {
 	return data[:k]
 }
 
-func (p ByFrase) Weight(i int) int { return 1 }
+func (p RunesGroup) Weight(i int) int { return 1 }
 
 //-----------------------------------------------------------------------------
-// func getBit_v1(x uint64, i int) bool {
-// 	return ((x & (1 << i)) != 0)
-// }
-
-// func getBit_v2(x uint64, i int) bool {
-// 	return (((x >> i) & 1) == 1)
-// }
-
-func wordsFeatures(s string) []Feature {
-	gs := strings.Split(s, " ")
-	features := make([]Feature, len(gs))
-	h := fnv.New64()
-	for i := range features {
-		h.Reset()
-		h.Write([]byte(gs[i]))
-		sum := h.Sum64()
-		features[i] = Feature{
-			Sum64:  sum,
-			Weight: 1,
-		}
-	}
-	return features
+type StringsGroup struct {
+	Strings []string
+	N       int
 }
 
-func stringFeatures(s string) []Feature {
-	return runesFeatures([]rune(s))
+var _ Features = StringsGroup{}
+
+func (p StringsGroup) Len() int {
+	n := (len(p.Strings) - p.N + 1)
+	if n < 0 {
+		n = 0
+	}
+	return n
 }
 
-func runesFeatures(rs []rune) []Feature {
-	if len(rs) == 0 {
-		return nil
+func (p StringsGroup) Bytes(i int) []byte {
+	var data []byte
+	for j := 0; j < p.N; j++ {
+		s := p.Strings[i+j]
+		data = append(data, []byte(s)...)
 	}
-	h := fnv.New64()
-	data := make([]byte, utf8.UTFMax)
-	features := make([]Feature, len(rs)-1)
-	for i := range features {
-
-		h.Reset()
-
-		n := utf8.EncodeRune(data, rs[i])
-		h.Write(data[:n])
-
-		n = utf8.EncodeRune(data, rs[i+1])
-		h.Write(data[:n])
-
-		features[i] = Feature{
-			Sum64:  h.Sum64(),
-			Weight: 1,
-		}
-	}
-	return features
+	//fmt.Printf("> %q\n", string(data))
+	return data
 }
 
-// func bytesFeatures(bs []byte) []Feature {
-// 	if len(bs) == 0 {
-// 		return nil
-// 	}
-// 	h := fnv.New64()
-// 	features := make([]feature, len(bs)-1)
-// 	for i := range features {
-// 		h.Reset()
-// 		h.Write(bs[i : i+2])
-// 		features[i] = feature{
-// 			sum:    h.Sum64(),
-// 			weight: 1,
-// 		}
-// 	}
-// 	return features
-// }
+func (p StringsGroup) Weight(i int) int { return 1 }
 
-// func bytesFeatures(bs [][]byte) []Feature {
-// 	features := make([]Feature, len(bs))
-// 	h := fnv.New64()
-// 	for i := range features {
-// 		h.Reset()
-// 		h.Write(bs[i])
-// 		sum := h.Sum64()
-// 		features[i] = Feature{
-// 			Sum64:  sum,
-// 			Weight: 1,
-// 		}
-// 	}
-// 	return features
-// }
+//-----------------------------------------------------------------------------

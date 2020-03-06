@@ -6,9 +6,6 @@ import (
 
 // SimHash:
 
-// https://en.wikipedia.org/wiki/SimHash
-// http://matpalm.com/resemblance/simhash/
-
 type Vector [64]int
 
 type Features interface {

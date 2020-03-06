@@ -1,0 +1,6 @@
+https://en.wikipedia.org/wiki/SimHash
+http://matpalm.com/resemblance/simhash/
+
+github.com/mfonda/simhash
+
+https://web.stanford.edu/class/cs345a/slides/04-highdim.pdf

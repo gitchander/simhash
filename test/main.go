@@ -8,10 +8,10 @@ import (
 
 func main() {
 	testWords()
-	//testRunesGroup()
-	//testStringsGroup()
+	//testShingleRunes()
+	//testShingleStrings()
 	//testChinese()
-	//testGroup()
+	//testShingling()
 }
 
 var samples = []string{
@@ -39,15 +39,15 @@ func testWords() {
 	}
 }
 
-func testRunesGroup() {
+func testShingleRunes() {
 
 	shs := make([]uint64, len(samples))
 
 	for i, sample := range samples {
 
-		p := simhash.RunesGroup{
+		p := simhash.ShinglingRunes{
 			Runes: []rune(sample),
-			N:     2,
+			K:     2,
 		}
 
 		shs[i] = simhash.Simhash(p)
@@ -59,15 +59,16 @@ func testRunesGroup() {
 	}
 }
 
-func testStringsGroup() {
+func testShingleStrings() {
 
 	shs := make([]uint64, len(samples))
 
 	for i, sample := range samples {
-		p := simhash.StringsGroup{
-			Strings: simhash.Words(sample),
-			N:       3,
-		}
+
+		words := simhash.Words(sample)
+		shingles := simhash.ShingleStrings(words, 3)
+		p := simhash.StringSlice(shingles)
+
 		shs[i] = simhash.Simhash(p)
 	}
 
@@ -89,8 +90,12 @@ func testChinese() {
 	shs := make([]uint64, len(samples))
 
 	for i, sample := range samples {
-		rs := simhash.RuneSlice([]rune(sample))
-		shs[i] = simhash.Simhash(rs)
+
+		words := simhash.Words(sample)
+		shingles := simhash.ShingleStrings(words, 2)
+		p := simhash.StringSlice(shingles)
+
+		shs[i] = simhash.Simhash(p)
 	}
 
 	for i := 1; i < len(shs); i++ {
@@ -98,26 +103,17 @@ func testChinese() {
 	}
 }
 
-func testGroup() {
+func testShingling() {
 
 	text := `Я помню чудное мгновенье:
 Передо мной явилась ты,
 Как мимолетное виденье,
 Как гений чистой красоты.
 `
-	// g := simhash.RunesGroup{
-	// 	Runes: []rune(text),
-	// 	N:     5,
-	// }
+	words := simhash.Words(text)
+	shingles := simhash.ShingleStrings(words, 3)
 
-	g := simhash.StringsGroup{
-		Strings: simhash.Words(text),
-		N:       3,
-	}
-
-	n := g.Len()
-	for i := 0; i < n; i++ {
-		data := g.Bytes(i)
-		fmt.Printf("%q\n", string(data))
+	for _, s := range shingles {
+		fmt.Println(s)
 	}
 }

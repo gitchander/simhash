@@ -42,6 +42,28 @@ func Vectorize(fs Features) Vector {
 	return v
 }
 
+func VectorizeBytes(bs [][]byte) Vector {
+	var v Vector
+	h := fnv.New64()
+	for _, b := range bs {
+		h.Reset()
+		h.Write(b)
+		var (
+			sum    = h.Sum64()
+			weight = 1
+		)
+		for j := range v {
+			bit := ((sum >> j) & 1)
+			if bit == 1 {
+				v[j] += weight
+			} else {
+				v[j] -= weight
+			}
+		}
+	}
+	return v
+}
+
 func Fingerprint(v Vector) uint64 {
 	var fp uint64
 	for i := range v {

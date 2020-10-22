@@ -42,7 +42,8 @@ func (p ShinglingStrings) Len() int {
 }
 
 func (p ShinglingStrings) Bytes(i int) []byte {
-	return encodeStringsV2(p.Strings[i : i+p.K])
+	s := strings.Join(p.Strings[i:i+p.K], " ")
+	return []byte(s)
 }
 
 func (p ShinglingStrings) Weight(i int) int { return 1 }

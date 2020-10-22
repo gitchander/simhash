@@ -8,10 +8,10 @@ import (
 
 func main() {
 	testWords()
-	//testShingleRunes()
-	//testShingleStrings()
-	//testChinese()
-	//testShingling()
+	testShingleRunes()
+	testShingleStrings()
+	testUnicode()
+	testShingling()
 }
 
 var samples = []string{
@@ -77,7 +77,7 @@ func testShingleStrings() {
 	}
 }
 
-func testChinese() {
+func testUnicode() {
 
 	samples := []string{
 		"你好 世界 呼噜",

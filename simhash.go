@@ -74,7 +74,7 @@ func Fingerprint(v Vector) uint64 {
 	return fp
 }
 
-// Compare calculates the Hamming distance between two 64-bit integers
+// Compare calculates the Hamming distance between two 64-bit integers.
 func Compare(a, b uint64) int {
 	var n int
 	v := a ^ b
